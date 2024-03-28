@@ -12,28 +12,27 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 
-import com.example.capstone_healthpass.server.ApiService;
+import com.example.capstone_healthpass.server.RetrofitManager;
 
 import org.json.JSONObject;
 
-import okhttp3.ResponseBody;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ReserveConfirmActivity  extends Activity {
-
+    String strMinute="";
     //daytime 에서 가져올 변수
     TextView tvYear3, tvMonth3, tvDay3, tvHour3, tvMinute3;
 
     TextView tvName2,tvPhone2;
     TextView seat2,personnel2;
     Button btnConfirm;
-    private Retrofit retrofit;
-    private ApiService apiService;
-
+    RetrofitManager retrofitManager = new RetrofitManager();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,32 +111,55 @@ public class ReserveConfirmActivity  extends Activity {
             @Override
             public void onClick(View v) {
                 //Intent
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.YEAR, Integer.parseInt(tvYear3.getText() .toString()));
+                calendar.set(Calendar.MONTH, Integer.parseInt(tvMonth3.getText().toString())-1);
+                calendar.set(Calendar.DAY_OF_MONTH,Integer.parseInt(tvDay3.getText() .toString()));
+                Date date = calendar.getTime();
 
-                String day = tvYear3.getText().toString() +tvMonth3.getText().toString() + tvDay3.getText().toString();
-                String time = tvHour3.getText().toString();
+                // 원하는 날짜 형식 지정
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+                // 날짜를 문자열로 변환
+                String formattedDate = sdf.format(date);
+                //다음 액티비티로 가는 것
+                //Intent
+                Log.d("day",formattedDate);
+                String day = formattedDate;
+                String time = tvHour3.getText().toString()+"시";
                 String seat = seat2.getText().toString();
-                Log.d("seat",seat);
-                String ex_name = personnel2.getText().toString();
-                reserveEx(day,time,seat,ex_name);
 
-                finish();
+                int minute = Integer.parseInt(tvMinute3.getText().toString());
+
+                if(minute < 30){
+                    strMinute="0분";
+                }
+                else{
+                    strMinute="30분";
+                }
+                String ex_name = personnel2.getText().toString();
+                reserveEx(day,time,strMinute,seat,ex_name);
+
+
+
             }
         });
-        Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl("https://b1ca-220-69-208-115.ngrok-free.app")
-                .addConverterFactory(GsonConverterFactory.create());
-        retrofit = builder.build();
 
-        apiService = retrofit.create(ApiService.class);
+
+
     }
-    public void reserveEx(final String day, final String time, final String seat,final String ex_name){
-        apiService.reserved(day,time,MainActivity.email,seat,ex_name,MainActivity.userName,MainActivity.phone).enqueue(new Callback<JSONObject>() {
+    public void reserveEx(final String day, final String time, final String minute,final String seat,final String ex_name){
+
+        retrofitManager.getApiService().reserved(day,time,minute,MainActivity.email,seat,ex_name,MainActivity.userName,MainActivity.phone).enqueue(new Callback<JSONObject>() {
             @Override
             public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
                 if(response.code()==201){
                     Log.d("Reservation","ReservationComplete");
+
                     Intent intent = new Intent(ReserveConfirmActivity.this, ReserveEndActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);//다음 액티비티 화면에 출력
+                    finish();
                 }
                 else if(response.code()==202){
                     Log.d("Reservation","해당 기구는 이미 예약됨");

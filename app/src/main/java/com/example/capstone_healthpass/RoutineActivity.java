@@ -52,19 +52,26 @@ public class RoutineActivity extends Activity {
                 switch (item.getItemId()) {
                     case R.id.navigation_home:
                         Intent intent = new Intent(RoutineActivity.this, MainActivity.class);
+
                         startActivity(intent);//다음 액티비티 화면에
-                        AppManager.finishAllActivities();
+                        finish();
                         break;
                     case R.id.navigation_mypage:
-                        Intent intent1 = new Intent(RoutineActivity.this, MYpageActivity.class);
-                        startActivity(intent1);//다음 액티비티 화면에
-                        AppManager.finishAllActivities();
+                        if(MainActivity.userName=="") {
+                            Toast.makeText(RoutineActivity.this, "로그인 후 이용 바랍니다.", Toast.LENGTH_SHORT).show();
+                        }else {
+                            Intent intent1 = new Intent(RoutineActivity.this, MYpageActivity.class);
+
+                            startActivity(intent1);//다음 액티비티 화면에
+                        }
+
                         // 예: 마이페이지 화면으로 이동
                         break;
                     case R.id.navigation_qr_code:
-                        Intent intent3 = new Intent(RoutineActivity.this,QrActivity.class);
+                        Intent intent3 = new Intent(RoutineActivity.this,ScanQR.class);
+
                         startActivity(intent3);
-                        AppManager.finishAllActivities();
+
                         break;
                 }
                 return true;

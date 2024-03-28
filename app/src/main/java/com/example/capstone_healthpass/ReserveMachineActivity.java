@@ -2,20 +2,31 @@ package com.example.capstone_healthpass;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
+import com.example.capstone_healthpass.server.RetrofitManager;
+
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ReserveMachineActivity extends Activity {
     //Context로 다음 액티비티에서 정보 사용
+    RetrofitManager retrofitManager = new RetrofitManager();
     public static Context ReserveContext;
     //daytime 에서 가져올 변수
     TextView tvYear2, tvMonth2, tvDay2, tvHour2, tvMinute2;
@@ -25,7 +36,7 @@ public class ReserveMachineActivity extends Activity {
 
     Button btnNext; //다음 액티비티로 넘어가는 버튼
 
-    Button[] numButtons = new Button[15];
+    Button[] numButtons = new Button[16];
     Integer[] numBtnIDs = { R.id.BtnNum0,R.id.BtnNum1,R.id.BtnNum2,R.id.BtnNum3,R.id.BtnNum4,
             R.id.BtnNum5,R.id.BtnNum6,R.id.BtnNum7,
             R.id.BtnNum8,R.id.BtnNum9, R.id.BtnNum10,R.id.BtnNum11,
@@ -105,46 +116,54 @@ public class ReserveMachineActivity extends Activity {
                     //빨강 : 다리
                     //파랑 : 팔, 어깨
                     if (index < 5) {
-                        seat.setText((index + 1) + "번 "); //버튼 번호를 받아와 띄움
-                        personnel.setText("런닝머신 (1시간)");
+                        seat.setText((index + 1) + "번"); //버튼 번호를 받아와 띄움
+                        personnel.setText("런닝머신");
                         seat.setTextColor(Color.BLUE);
                         personnel.setTextColor(Color.BLUE);
 
                     } else if (index == 5 || index == 8) {
-                        seat.setText((index + 1) + "번 "); //버튼 번호를 받아와 띄움
-                        personnel.setText("펙덱머신 (30분)");
+                        seat.setText((index + 1) + "번"); //버튼 번호를 받아와 띄움
+                        personnel.setText("펙덱머신");
                         seat.setTextColor(Color.BLUE);
                         personnel.setTextColor(Color.BLUE);
 
                     } else if (index == 6 || index == 7) {
                         seat.setText((index + 1) + "번 자리"); //버튼 번호를 받아와 띄움
-                        personnel.setText("사이클 머신 (30분)");
+                        personnel.setText("사이클 머신");
                         seat.setTextColor(Color.RED);
                         personnel.setTextColor(Color.RED);
 
 
                     } else if (index == 10) {
                         seat.setText((index + 1) + "번 자리"); //버튼 번호를 받아와 띄움
-                        personnel.setText("사이클 머신 (30분)");
+                        personnel.setText("사이클 머신");
                         seat.setTextColor(Color.RED);
                         personnel.setTextColor(Color.RED);
 
 
 
                     } else if (index == 9 || index == 11) {
-                        seat.setText((index + 1) + "번 "); //버튼 번호를 받아와 띄움
-                        personnel.setText("하이풀 머신 (30분)");
+                        seat.setText((index + 1) + "번"); //버튼 번호를 받아와 띄움
+                        personnel.setText("랫폴다운 머신");
                         seat.setTextColor(Color.BLUE);
                         personnel.setTextColor(Color.BLUE);
 
 
-                    } else{
-                        seat.setText((index + 1) + "번 "); //버튼 번호를 받아와 띄움
-                        personnel.setText("레그프레스 (30분)");
+                    } else if (index == 12 || index == 13){
+                        seat.setText((index + 1) + "번"); //버튼 번호를 받아와 띄움
+                        personnel.setText("레그프레스");
                         seat.setTextColor(Color.RED);
                         personnel.setTextColor(Color.RED);
 
                     }
+                    else{
+                        seat.setText((index + 1) + "번"); //버튼 번호를 받아와 띄움
+                        personnel.setText("벤치프레스");
+                        seat.setTextColor(Color.RED);
+                        Log.d("체크",index+"번");
+                        personnel.setTextColor(Color.RED);
+                    }
+
                 }
             });
         }//for문 끝
@@ -180,9 +199,28 @@ public class ReserveMachineActivity extends Activity {
 
                 }
                 else {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.set(Calendar.YEAR, Integer.parseInt(tvYear2.getText() .toString()));
+                    calendar.set(Calendar.MONTH, Integer.parseInt(tvMonth2.getText().toString())); // 월은 0부터 시작하므로 9는 10월을 나타냅니다.
+                    calendar.set(Calendar.DAY_OF_MONTH,Integer.parseInt(tvDay2.getText() .toString()));
+                    Log.d("Month", tvMonth2.getText().toString());
+                    Date date = calendar.getTime();
+
+                    // 원하는 날짜 형식 지정
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+                    // 날짜를 문자열로 변환
+                    String formattedDate = sdf.format(date);
+                    //다음 액티비티로 가는 것
                     //Intent
-                    Intent intent = new Intent(ReserveMachineActivity.this,ReserveConfirmActivity.class);
-                    startActivity(intent);//다음 액티비티 화면에 출력
+                    String day = formattedDate;
+
+                    String hour = tvHour2.getText().toString();
+                    String minute = tvMinute2.getText().toString();
+                    String seats = seat.getText().toString();
+                    String name = personnel.getText().toString();
+                    reservedMachine(day,hour,minute,seats,name);
+
                 }
 
             }
@@ -190,5 +228,28 @@ public class ReserveMachineActivity extends Activity {
 
 
     }//onCreate 끝
+    public void reservedMachine(final String day, final String time, final String minute, final String seat, final String ex_name){
 
+        retrofitManager.getApiService().reservedMachine(day,time,minute,seat,ex_name).enqueue(new Callback<JSONObject>() {
+            @Override
+            public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
+
+                if(response.code()==201) {
+                    Intent intent = new Intent(ReserveMachineActivity.this, ReserveConfirmActivity.class);
+
+                    startActivity(intent);//다음 액티비티 화면에 출력
+                    finish();
+                }
+                else if (response.code()==202){
+                    Toast.makeText(ReserveMachineActivity.this,"선택하신 시간의 운동기구는 이미 예약 되어 있습니다.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JSONObject> call, Throwable t) {
+                Log.d("error",t.toString());
+            }
+        });
+    }
 }

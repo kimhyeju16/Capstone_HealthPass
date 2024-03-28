@@ -1,6 +1,5 @@
 package com.example.capstone_healthpass;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,23 +12,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.capstone_healthpass.server.ApiService;
+import com.example.capstone_healthpass.server.RetrofitManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class JoinActivity extends AppCompatActivity {
 
@@ -38,8 +29,8 @@ public class JoinActivity extends AppCompatActivity {
     private EditText join_name,join_email,join_password,join_pwck,join_phone;
     private BottomNavigationView bottomNavigationView;
     Gson gson;
-    private Retrofit retrofit;
-    private ApiService apiService;
+
+    RetrofitManager retrofitManager = new RetrofitManager();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,17 +55,20 @@ public class JoinActivity extends AppCompatActivity {
                         Intent intent = new Intent(JoinActivity.this, MainActivity.class);
                         startActivity(intent);//다음 액티비티 화면에
                         finish();
+
                         break;
                     case R.id.navigation_mypage:
                         Intent intent1 = new Intent(JoinActivity.this, MYpageActivity.class);
+
                         startActivity(intent1);//다음 액티비티 화면에
-                        AppManager.finishAllActivities();
+
                         // 예: 마이페이지 화면으로 이동
                         break;
                     case R.id.navigation_qr_code:
-                        Intent intent3 = new Intent(JoinActivity.this,QrActivity.class);
+                        Intent intent3 = new Intent(JoinActivity.this,ScanQR.class);
+
                         startActivity(intent3);
-                        finish();
+
                         break;
                 }
                 return true;
@@ -116,13 +110,10 @@ public class JoinActivity extends AppCompatActivity {
     }
     private void registerAccount(final String name,final String phone, final String email, final String password){
 
-        Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl("https://b1ca-220-69-208-115.ngrok-free.app")
-                .addConverterFactory(GsonConverterFactory.create());
-        retrofit = builder.build();
 
-        apiService = retrofit.create(ApiService.class);
-        apiService.requestPost(name,phone,email,password).enqueue(new Callback<JSONObject>() {
+
+
+        retrofitManager.getApiService().requestPost(name,phone,email,password).enqueue(new Callback<JSONObject>() {
 
             @Override
             public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
@@ -132,6 +123,7 @@ public class JoinActivity extends AppCompatActivity {
                     Toast.makeText(JoinActivity.this, "회원가입 완료", Toast.LENGTH_SHORT).show();
                     Log.d("RegisterSuccess", "회원가입 성공");
                     Intent result = new Intent(JoinActivity.this, MainActivity.class);
+                    result.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(result);
                     finish();
                 }

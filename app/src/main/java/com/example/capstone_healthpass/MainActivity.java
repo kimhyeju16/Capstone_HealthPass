@@ -1,10 +1,8 @@
 package com.example.capstone_healthpass;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -16,8 +14,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.example.capstone_healthpass.DB.DataBaseHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -33,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private Button gps_btn;
     private TextView name;
     private Button Health_diary_btn;
-    private WeekPlanFragment weekPlanFragment;
+    private WeekPlanActivity weekPlanActivity;
     private BottomNavigationView bottomNavigationView;
     private Button login_btn,logout_btn;
     Intent intent;
@@ -117,20 +113,23 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.navigation_home:
                         Intent intent = new Intent(MainActivity.this, MainActivity.class);
                         startActivity(intent);//다음 액티비티 화면에
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         finish();
                         break;
                     case R.id.navigation_mypage:
-                        Intent intent1 = new Intent(MainActivity.this, MYpageActivity.class);
-
-                        startActivity(intent1);//다음 액티비티 화면에
-                        finish();
+                        if(userName=="") {
+                            Toast.makeText(MainActivity.this, "로그인 후 이용 바랍니다.", Toast.LENGTH_SHORT).show();
+                        }else {
+                            Intent intent1 = new Intent(MainActivity.this, MYpageActivity.class);
+                            startActivity(intent1);//다음 액티비티 화면에
+                        }
                         // 예: 마이페이지 화면으로 이동
                         break;
                     case R.id.navigation_qr_code:
-                        Intent intent3 = new Intent(MainActivity.this, QrActivity.class);
+                        Intent intent3 = new Intent(MainActivity.this, ScanQR.class);
 
                         startActivity(intent3);
-                        finish();
+
                         break;
                 }
                 return true;
@@ -142,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+
                 startActivity(intent);//다음 액티비티 화면에 출력
 
             }
@@ -153,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
                 //다음 액티비티로 가는 것
                 //Intent
                 Intent intent = new Intent(MainActivity.this, JoinActivity.class);
+
                 startActivity(intent);//다음 액티비티 화면에 출력
 
 
@@ -171,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "로그인 후 이용 바랍니다.", Toast.LENGTH_SHORT).show();
                 }else {
                     Intent intent = new Intent(MainActivity.this, ReserveDaytimeActivity.class);
+
                     startActivity(intent);//다음 액티비티 화면에 출력
 
                 }
@@ -186,7 +188,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, RoutineActivity.class);
-
                 startActivity(intent);//다음 액티비티 화면에 출력
 
             }
@@ -216,20 +217,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick (View v){
                  //기존 버튼들 숨기기
-                name.setVisibility(View.INVISIBLE);
-                join_Btn.setVisibility(View.GONE);
-                reserve_btn.setVisibility(View.GONE);
-                routine_btn.setVisibility(View.GONE);
-                gps_btn.setVisibility(View.GONE);
-                Health_diary_btn.setVisibility(View.GONE);
-                login_btn.setVisibility(View.GONE);
-                // WeekPlanFragment를 화면에 표시
-                if (weekPlanFragment == null) {
-                    weekPlanFragment = new WeekPlanFragment();
-                }
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, weekPlanFragment)
-                        .commit();
+
+               Intent week = new Intent(MainActivity.this,WeekPlanActivity.class);
+               startActivity(week);
 
             }
         });

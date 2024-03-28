@@ -11,12 +11,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.capstone_healthpass.server.ApiService;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.example.capstone_healthpass.server.RetrofitManager;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -25,18 +22,15 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginActivity extends AppCompatActivity {
     private String nameValue;
-    private Retrofit retrofit;
-    private ApiService apiService;
+
 
     private Button btnCheck, btnCancel;
 
     private EditText emailText, pwdText;
-
+    RetrofitManager retrofitManager = new RetrofitManager();
     @SuppressLint("MissingInflatedId")
     @Override
     public void onCreate(Bundle savedInstance){
@@ -47,12 +41,7 @@ public class LoginActivity extends AppCompatActivity {
         emailText = findViewById(R.id.editTextTextEmailAddress);
         pwdText = findViewById(R.id.editTextTextPassword);
 
-        Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl("https://b1ca-220-69-208-115.ngrok-free.app")
-                .addConverterFactory(GsonConverterFactory.create());
-        retrofit = builder.build();
 
-        apiService = retrofit.create(ApiService.class);
 
     }
 
@@ -71,7 +60,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private void loginAccount(final String email, final String password){
 
-        apiService.loginPost(email,password).enqueue(new Callback<JSONObject>() {
+
+        retrofitManager.getApiService().loginPost(email,password).enqueue(new Callback<JSONObject>() {
             @Override
             public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
 
@@ -103,7 +93,7 @@ public class LoginActivity extends AppCompatActivity {
     }
     private void getInfo(final String email){
 
-        apiService.getName(email).enqueue(new Callback<ResponseBody>() {
+        retrofitManager.getApiService().getName(email).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 
@@ -129,6 +119,7 @@ public class LoginActivity extends AppCompatActivity {
                     result.putExtra("phone",phone);
                     result.putExtra("email",email);
                     Toast.makeText(LoginActivity.this, name+"님, 반갑습니다.", Toast.LENGTH_SHORT).show();
+                    result.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(result);
                     finish();
                 } catch (IOException e) {
